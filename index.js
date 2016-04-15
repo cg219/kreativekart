@@ -3,14 +3,28 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+const config = require("./config");
+const MongoClient = require("mongodb").MongoClient;
 const app = express();
 const port = process.env.PORT;
-const admin = require("./admin")(express.Router());
 
+let db;
+
+app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 app.use(cookieParser());
-app.use("/admin", admin.router);
-console.log(admin.router);
+
+MongoClient.connect(config.mongo.uri)
+	.then((response)=>{
+		db = response;
+
+		app.use("/api/products", require("./routes/products")(express.Router(), db).router);
+		app.use("/api/orders", require("./routes/orders")(express.Router()).router);
+		app.use("/api/customers", require("./routes/customers")(express.Router()).router);
+
+	}, (error)=>{
+		console.error(error);
+	})
 
 let server = app.listen(port, function(){
 	let address = server.address().address.startsWith(":") ? "localhost" : server.address().address;
