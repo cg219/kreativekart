@@ -91,7 +91,6 @@ class ProductsAPI{
 
 			_db.collection("products").find({sku: req.sku}).limit(1).next()
 				.then( (doc)=> {
-					console.log(doc);
 					if(doc){
 						res.status(200).json({
 							message: "Product found",
