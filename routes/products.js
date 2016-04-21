@@ -1,5 +1,6 @@
 'use strict';
 const Product = require("./../models/product");
+const Variation = require("./../models/variation");
 
 class ProductsAPI{
 	constructor(router, db){
@@ -58,7 +59,8 @@ class ProductsAPI{
 			product.name = req.body.name;
 			product.price = req.body.price;
 			product.quantity = req.body.quantity;
-			product.description = req.body.description;
+			product.description = req.body.description || "";
+			product.variations = req.body.variations ? JSON.parse(req.body.variations) : [];
 
 			_db.collection("products").find({sku: product.sku}).limit(1).next()
 				.then((doc) => {

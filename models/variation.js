@@ -1,13 +1,11 @@
 'use strict';
 
-class Product{
+class Variation{
 	constructor(){
-		this.sku = "";
 		this.name = "";
 		this._price = "";
-		this._quantity = "";
 		this.description = "";
-		this.variations = [];
+		this._quantity = 0;
 	}
 
 	set price(val){
@@ -27,4 +25,4 @@ class Product{
 	}
 }
 
-module.exports = Product;
+module.exports = Variation;
