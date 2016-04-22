@@ -7,6 +7,8 @@ const config = require("./config");
 const MongoClient = require("mongodb").MongoClient;
 const app = express();
 const port = process.env.PORT;
+const session = require("express-session");
+const MongoStore = require("connect-mongo")(session);
 
 let db;
 
@@ -17,6 +19,15 @@ app.use(cookieParser());
 MongoClient.connect(config.mongo.uri)
 	.then((response)=>{
 		db = response;
+
+		app.use(session({
+			secret: "kart",
+			resave: true,
+			saveUninitialized: false,
+			store: new MongoStore({
+				db: db
+			})
+		}));
 
 		app.use("/api/products", require("./routes/products")(express.Router(), db).router);
 		app.use("/api/orders", require("./routes/orders")(express.Router()).router);
