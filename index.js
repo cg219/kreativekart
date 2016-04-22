@@ -22,7 +22,7 @@ MongoClient.connect(config.mongo.uri)
 
 		app.use(session({
 			secret: "kart",
-			resave: true,
+			resave: false,
 			saveUninitialized: false,
 			store: new MongoStore({
 				db: db
