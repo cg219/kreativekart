@@ -5,7 +5,7 @@ class OrdersAPI{
 		let _router = this.router = router;
 		let _db = db;
 
-		_router.param("orderID", function(req, res, next, id){
+		_router.param("orderID", (req, res, next, id) => {
 			if(id){
 				req.orderID = id;
 				next();
@@ -56,6 +56,6 @@ class OrdersAPI{
 	}
 }
 
-module.exports = function(router, db){
+module.exports = (router, db) => {
 	return new OrdersAPI(router, db);
 }

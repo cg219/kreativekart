@@ -1,14 +1,16 @@
 'use strict';
 
-const express = require("express");
-const bodyParser = require("body-parser");
-const cookieParser = require("cookie-parser");
-const config = require("./config");
-const MongoClient = require("mongodb").MongoClient;
-const app = express();
-const port = process.env.PORT;
-const session = require("express-session");
-const MongoStore = require("connect-mongo")(session);
+const express 			= require("express");
+const bodyParser 		= require("body-parser");
+const cookieParser 		= require("cookie-parser");
+const config 			= require("./config");
+const MongoClient 		= require("mongodb").MongoClient;
+const app 				= express();
+const port 				= process.env.PORT;
+const session 			= require("express-session");
+const MongoStore 		= require("connect-mongo")(session);
+const passport 			= require("passport");
+const LocalStrategy 	= require("passport-local").Strategy;
 
 let db;
 
@@ -22,22 +24,72 @@ MongoClient.connect(config.mongo.uri)
 
 		app.use(session({
 			secret: "kart",
-			resave: false,
-			saveUninitialized: false,
+			resave: true,
+			saveUninitialized: true,
 			store: new MongoStore({
 				db: db
 			})
 		}));
 
+		passport.use(new LocalStrategy((username, password, done) => {
+			console.log("IM LOOKING FOR STUFF");
+			
+			db.collection("users").find({username: username}).limit(1).next()
+				.then((doc) => {
+					if(doc){
+						let user = new User(doc);
+
+						if(user.isPasswordValid(password)){
+							done(null, user);
+						}
+
+						done(null, false, {message: "Incorrect User/Password"});
+					}
+					else{
+						done(null, false, {message: "Incorrect User/Password"});
+					}
+				}, (err) => {
+					console.error(err);
+					done(err);
+				});
+		}));
+
+		passport.serializeUser((user, done) => {
+			done(null, user.username);
+		})
+
+		passport.deserializeUser((username, done) => {
+			db.collection("users").find({username: username}).limit(1).next()
+				.then((doc) => {
+					let user = new User(doc);
+
+					done(null, user);
+				}, (err) => {
+					done(err);
+				})
+		})
+
+		app.use(passport.initialize());
+		app.use(passport.session());
+
+		app.use("/api/admin", require("./routes/admin")(express.Router(), db, passport).router);
 		app.use("/api/products", require("./routes/products")(express.Router(), db).router);
 		app.use("/api/orders", require("./routes/orders")(express.Router()).router);
 		app.use("/api/customers", require("./routes/customers")(express.Router()).router);
+
+		app.get("/", (req, res) => {
+			res.json({message: "HOME!"})
+		})
+
+		app.get("/fail", (req, res) => {
+			res.json({message: "FAILURE!"})
+		})
 
 	}, (error)=>{
 		console.error(error);
 	})
 
-let server = app.listen(port, function(){
+let server = app.listen(port, () => {
 	let address = server.address().address.startsWith(":") ? "localhost" : server.address().address;
 	console.log("Connected at:", `http://${address}:${server.address().port}`);
 });
