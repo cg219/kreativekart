@@ -11,6 +11,8 @@ const session 			= require("express-session");
 const MongoStore 		= require("connect-mongo")(session);
 const passport 			= require("passport");
 const LocalStrategy 	= require("passport-local").Strategy;
+const User 				= require("./models/user");
+const middleware		= require("./middleware");
 
 let db;
 
@@ -31,11 +33,14 @@ MongoClient.connect(config.mongo.uri)
 			})
 		}));
 
-		passport.use(new LocalStrategy((username, password, done) => {
-			console.log("IM LOOKING FOR STUFF");
+		passport.use(new LocalStrategy({
+			usernameField: "username",
+			passwordField: "password"
+		}, (username, password, done) => {
 			
 			db.collection("users").find({username: username}).limit(1).next()
 				.then((doc) => {
+
 					if(doc){
 						let user = new User(doc);
 

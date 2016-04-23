@@ -1,5 +1,7 @@
 'use strict';
 
+const middleware	= require("./../middleware");
+
 class OrdersAPI{
 	constructor(router, db){
 		let _router = this.router = router;
@@ -15,7 +17,7 @@ class OrdersAPI{
 			}
 		})
 
-		_router.get("/:orderID", (req, res) => {
+		_router.get("/:orderID", middleware.isLoggedIn, (req, res) => {
 			console.log(`Getting order with id ${req.orderID}`);
 
 			_db.collection("orders").find({orderID: req.orderID}).limit(1).next()
@@ -37,7 +39,7 @@ class OrdersAPI{
 				})
 		})
 
-		_router.get("/", (req, res) => {
+		_router.get("/", middleware.isLoggedIn, (req, res) => {
 			console.log("Getting All Orders");
 
 			_db.collection("orders").find({}).toArray()

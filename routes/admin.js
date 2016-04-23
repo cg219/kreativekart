@@ -8,7 +8,7 @@ class AdminAPI{
 		let _db = db;
 		let _passport = passport;
 
-		_router.post("/login", _passport.authenticate("local", { successRedirect: "/", failureRedirect: "/fail"}), (req, res) => {
+		_router.post("/login", _passport.authenticate("local"), (req, res) => {
 			console.log("Logging In");
 			res.json({message: "Login Called"})
 		})

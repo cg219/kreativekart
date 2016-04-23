@@ -1,6 +1,8 @@
 'use strict';
-const Product = require("./../models/product");
-const Variation = require("./../models/variation");
+
+const Product 		= require("./../models/product");
+const Variation 	= require("./../models/variation");
+const middleware	= require("./../middleware");
 
 class ProductsAPI{
 	constructor(router, db){
@@ -17,7 +19,7 @@ class ProductsAPI{
 			}
 		})
 
-		_router.delete("/delete/:sku", (req, res) => {
+		_router.delete("/delete/:sku", middleware.isLoggedIn, (req, res) => {
 			console.log("Delete a Product");
 
 			_db.collection("products").findOneAndDelete({sku: req.sku})
@@ -34,7 +36,7 @@ class ProductsAPI{
 				})
 		})
 
-		_router.put("/edit/:sku", (req, res) => {
+		_router.put("/edit/:sku", middleware.isLoggedIn, (req, res) => {
 			console.log("Edit a Product");
 
 			_db.collection("products").findOneAndUpdate({sku: req.sku}, {$set: req.body}, {returnOriginal: false})
@@ -51,7 +53,8 @@ class ProductsAPI{
 				})
 		})
 
-		_router.post("/add", (req, res) => {
+		_router.post("/add", middleware.isLoggedIn, (req, res) => {
+
 			console.log("Add a product");
 
 			let product = new Product();
