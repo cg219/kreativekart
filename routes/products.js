@@ -30,10 +30,7 @@ class ProductsAPI{
 							product: doc
 						}
 					})
-				}, (err) => {
-					console.error(err);
-					res.status(500).json({message: "Internal Error"});
-				})
+				}, (err) => { middleware.defaultError(err, res); })
 		})
 
 		_router.put("/edit/:sku", middleware.isLoggedIn, (req, res) => {
@@ -44,13 +41,10 @@ class ProductsAPI{
 					res.json({
 						message: "Product Updated",
 						data: {
-							product: doc
+							product: doc.value
 						}
 					})
-				}, (err) => {
-					console.error(err);
-					res.status(500).json({message: "Internal Error"});
-				})
+				}, (err) => { middleware.defaultError(err, res); })
 		})
 
 		_router.post("/add", middleware.isLoggedIn, (req, res) => {
@@ -80,15 +74,9 @@ class ProductsAPI{
 										product: product
 									}
 								});
-							}, (err) => {
-								console.error(err);
-								res.status(500).json({message: "Internal Error"});
-							})
+							}, (err) => { middleware.defaultError(err, res); })
 					}
-				}, (err) => {
-					console.error(err);
-					res.status(500).json({message: "Internal Error"});
-				})
+				}, (err) => { middleware.defaultError(err, res); })
 		})
 
 		_router.get("/:sku", (req, res) => {
@@ -107,10 +95,7 @@ class ProductsAPI{
 					else{
 						res.status(404).json({ message: "Product Not Found"});
 					}
-				}, (err) =>{
-					console.error(err);
-					res.status(500).json({ message: "Internal Error" });
-				})
+				}, (err) =>{ middleware.defaultError(err, res); })
 		})
 
 		_router.get("/", (req, res) => {
@@ -124,10 +109,7 @@ class ProductsAPI{
 							products: docs
 						}
 					});
-				}, (err) => {
-					console.error(err);
-					res.status(500).json({ message: "Internal Error" });
-				})
+				}, (err) => { middleware.defaultError(err, res); })
 		})
 	}
 }

@@ -33,10 +33,7 @@ class OrdersAPI{
 					else{
 						res.status(404).json({ message: "Order Not Found"});
 					}
-				}, (err) =>{
-					console.error(err);
-					res.status(500).json({ message: "Internal Error" });
-				})
+				}, (err) =>{ middleware.defaultError(err, res); })
 		})
 
 		_router.get("/", middleware.isLoggedIn, (req, res) => {
@@ -50,10 +47,7 @@ class OrdersAPI{
 							orders: docs
 						}
 					});
-				}, (err) => {
-					console.error(err);
-					res.status(500).json({ message: "Internal Error" });
-				})
+				}, (err) => { middleware.defaultError(err, res); })
 		})
 	}
 }

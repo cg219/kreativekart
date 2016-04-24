@@ -11,7 +11,7 @@ class User{
 		return this.password === pass;
 	}
 
-	isAdmin(role){
+	isAdmin(){
 		return this.role === "admin";
 	}
 }
