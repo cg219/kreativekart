@@ -77,10 +77,10 @@ MongoClient.connect(config.mongo.uri)
 		app.use(passport.initialize());
 		app.use(passport.session());
 
-		app.use("/api/admin", require("./routes/admin")(express.Router(), db, passport).router);
-		app.use("/api/products", require("./routes/products")(express.Router(), db).router);
-		app.use("/api/orders", require("./routes/orders")(express.Router()).router);
-		app.use("/api/customers", require("./routes/customers")(express.Router()).router);
+		app.use("/admin", require("./routes/admin")(express.Router(), db, passport).router);
+		app.use("/products", require("./routes/products")(express.Router(), db).router);
+		app.use("/orders", require("./routes/orders")(express.Router()).router);
+		app.use("/customers", require("./routes/customers")(express.Router()).router);
 
 		app.get("/", (req, res) => {
 			res.json({message: "HOME!"})
