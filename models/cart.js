@@ -7,34 +7,55 @@ class Cart{
 		this.bag = new Map();
 	}
 
-	addToCart(product, quantity){
+	addToCart(item, quantity){
 		let bag = this.bag;
 
-		if(bag.has(product)){
-			bag.set(product, bag.get(product) + quantity);
+		if(bag.has(item)){
+			bag.set(item, bag.get(item) + quantity);
 			return bag;
 		}
 
-		bag.set(product, quantity);
+		bag.set(item, quantity);
 		return bag;
 	}
 
-	removeFromCart(product, quantity){
+	removeFromCart(item, quantity){
 		let bag = this.bag;
 
-		if(bag.has(product)){
-			bag.set(product, bag.get(product) - quantity);
+		if(bag.has(item)){
+			bag.set(item, bag.get(item) - quantity);
 
-			if(bag.get(product) <= 0){
-				bag.delete(product);
+			if(bag.get(item) <= 0){
+				bag.delete(item);
 			}
 			return bag;
 		}
 	}
 
-	inCart(){
+	get items(){
 		return this.bag.entries();
+	}
+
+	contains(sku, variation){
+		let items = this.items;
+
+		for(var [item] of items){
+			if(item.sku == sku && item.variation == variation){
+				return item;
+			}
+		}
+
+		return false;
 	}
 }
 
-module.exports = Cart;
+class CartItem{
+	constructor(product, variation){
+		this.sku = product.sku;
+		this.variation = variation || "none";
+		this.price = variation ? product.variations[variation].price || product.price;
+	}
+}
+
+module.exports.Cart = Cart;
+module.exports.CartItem = CartItem;
