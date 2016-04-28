@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "./node_modules/.bin/mocha --reporter spec"
   },
   "repository": {
     "type": "git",
@@ -25,5 +25,11 @@
   "bugs": {
     "url": "https://github.com/cg219/kreativekart/issues"
   },
-  "homepage": "https://github.com/cg219/kreativekart"
+  "homepage": "https://github.com/cg219/kreativekart",
+  "devDependencies": {
+    "mocha": "^2.4.5",
+    "should": "^8.3.1",
+    "superagent": "^1.8.3",
+    "supertest": "^1.2.0"
+  }
 }

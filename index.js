@@ -20,7 +20,7 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 app.use(cookieParser());
 
-MongoClient.connect(config.mongo.uri)
+MongoClient.connect(config.mongo.test)
 	.then((response)=>{
 		db = response;
 
@@ -81,14 +81,6 @@ MongoClient.connect(config.mongo.uri)
 		app.use("/products", require("./routes/products")(express.Router(), db).router);
 		app.use("/orders", require("./routes/orders")(express.Router()).router);
 		app.use("/customers", require("./routes/customers")(express.Router()).router);
-
-		app.get("/", (req, res) => {
-			res.json({message: "HOME!"})
-		})
-
-		app.get("/fail", (req, res) => {
-			res.json({message: "FAILURE!"})
-		})
 
 	}, (error)=>{
 		console.error(error);

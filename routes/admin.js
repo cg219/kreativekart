@@ -10,6 +10,7 @@ class AdminAPI{
 		let _passport = passport;
 
 		_router.param("username", function(req, res, next, id){
+			console.log("Edit")
 			if(id){
 				req.username = id;
 				next();
@@ -61,6 +62,34 @@ class AdminAPI{
 				}, (err) => { middleware.defaultEffor(err, res); })
 		})
 
+		_router.put("/users/:username/edit", middleware.isLoggedIn, (req, res) => {
+			console.log("Editing User:", req.username);
+
+			if((req.user.username == req.username) || (req.user.isAdmin())){
+				let updatedUser = Object.assign({}, req.body);
+
+				delete updatedUser.username;
+
+				if( !req.user.isAdmin() ){
+					delete updatedUser.role;
+				}
+
+				_db.collection("users").findOneAndUpdate({username: req.username}, {$set: updatedUser}, {returnOriginal: false})
+					.then((doc) => {
+						res.json({
+							message: "User Updated",
+							data: {
+								user: doc.value
+							}
+						})
+					}, (err) => { middleware.defaultError(err, res); });
+			}
+			else{
+				console.log("Permission Needed");
+				res.status(401).json({message: "Not an Admin"});
+			}
+		})
+
 		_router.get("/users/:username", middleware.isLoggedIn, (req, res) => {
 			console.log("Getting User:", req.username);
 
@@ -78,30 +107,6 @@ class AdminAPI{
 						res.status(404).json({ message: "User Not Found"});
 					}
 				}, (err) => { middleware.defaultError(err, res); })
-		})
-
-		_router.put("/users/:username/edit", middleware.isLoggedIn, (req, res) => {
-			console.log("Editing User:", req.username);
-
-			if((req.user.username == req.username) || (req.user.isAdmin())){
-				let updatedUser = Object.assign({}, req.body);
-
-				delete updatedUser.username;
-
-				_db.collection("users").findOneAndUpdate({username: req.username}, {$set: updatedUser}, {returnOriginal: false})
-					.then((doc) => {
-						res.json({
-							message: "User Updated",
-							data: {
-								user: doc.value
-							}
-						})
-					}, (err) => { middleware.defaultError(err, res); });
-			}
-			else{
-				console.log("Permission Needed");
-				res.status(401).json({message: "Not an Admin"});
-			}
 		})
 
 		_router.get("/users", middleware.isLoggedIn, (req, res) => {
