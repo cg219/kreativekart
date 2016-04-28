@@ -20,9 +20,8 @@ class ProductsAPI{
 		})
 
 		_router.post("/add", middleware.isAdmin, (req, res) => {
-
 			console.log("Add a product");
-			console.log(req.body);
+
 			let product = new Product();
 			product.sku = req.body.sku;
 			product.name = req.body.name;
@@ -33,7 +32,6 @@ class ProductsAPI{
 
 			_db.collection("products").find({sku: product.sku}).limit(1).next()
 				.then((doc) => {
-					console.log(doc);
 					if(doc){
 						res.status(500).json({message: "Product with this SKU already exists."});
 					}

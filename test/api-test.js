@@ -13,10 +13,13 @@ describe("Kreative Kart", () => {
 	let normalUser;
 	let adminUser;
 	let productAdmin;
+	let shoppingUser;
 
 	before((done) => {
 		normalUser = agent.agent();
 		adminUser = agent.agent();
+		productAdmin = agent.agent();
+		shoppingUser = agent.agent();
 
 		MongoClient.connect(config.mongo.test)
 			.then((response) => {
@@ -44,11 +47,11 @@ describe("Kreative Kart", () => {
 			request(api)
 				.post("/admin/register")
 				.send(user)
-				.expect(200)
 				.end((err, res) => {
-					res.body.message.should.equal("User added");
+					res.status.should.equal(200);
 					res.body.data.user.should.not.equal(null);
 					res.body.data.user.role.should.equal("admin");
+					res.body.data.user.username.should.equal("test_admin");
 					done();
 				})
 		})
@@ -63,11 +66,11 @@ describe("Kreative Kart", () => {
 			request(api)
 				.post("/admin/register")
 				.send(user)
-				.expect(200)
 				.end((err, res) => {
-					res.body.message.should.equal("User added");
+					res.status.should.equal(200);
 					res.body.data.user.should.not.equal(null);
 					res.body.data.user.role.should.equal("normal");
+					res.body.data.user.username.should.equal("test_user");
 					done();
 				})
 		})
@@ -83,7 +86,13 @@ describe("Kreative Kart", () => {
 				.send(user)
 				.end((err, res) => {
 					res.body.message.should.not.equal(null);
-					done();
+
+					normalUser
+						.get(api + "/admin/users/")
+						.end((err, res) => {
+							res.status.should.equal(200);
+							done();
+						})
 				})
 		})
 
@@ -91,7 +100,6 @@ describe("Kreative Kart", () => {
 			normalUser
 				.get(api + "/admin/users/")
 				.end((err, res) => {
-					res.body.message.should.equal("All Users");
 					res.body.data.users.should.not.equal(null);
 					done();
 				})
@@ -101,8 +109,7 @@ describe("Kreative Kart", () => {
 			normalUser
 				.get(api + "/admin/users/test_user")
 				.end((err, res) => {
-					res.body.message.should.equal("User Found");
-					res.body.data.user.should.not.equal(null);
+					res.body.data.user.username.should.equal("test_user");
 					done();
 				})
 		})
@@ -117,7 +124,6 @@ describe("Kreative Kart", () => {
 				.put(api + "/admin/users/test_user/edit")
 				.send(user)
 				.end((err, res) => {
-					res.body.message.should.equal("User Updated");
 					res.body.data.user.password.should.not.equal("test_pass");
 					res.body.data.user.password.should.equal("test_pass_again");
 					done();
@@ -134,9 +140,23 @@ describe("Kreative Kart", () => {
 				.put(api + "/admin/users/test_admin/edit")
 				.send(user)
 				.end((err, res) => {
-					res.body.message.should.equal("Not an Admin or Invalid User");
 					res.status.should.equal(401);
 					done();
+				})
+		})
+
+		it("should logout the user", (done) => {
+			normalUser
+				.get(api + "/admin/logout")
+				.end((err, res) => {
+					res.status.should.equal(200);
+
+					normalUser
+						.get(api + "/admin/users")
+						.end((err, res) => {
+							res.status.should.equal(401);
+							done();
+						})
 				})
 		})
 	})
@@ -153,7 +173,6 @@ describe("Kreative Kart", () => {
 				.then(() => {
 					delete user.role;
 					
-					productAdmin = agent.agent();
 					productAdmin
 						.post(api + "/admin/login")
 						.send(user)
@@ -189,7 +208,6 @@ describe("Kreative Kart", () => {
 				.post(api + "/products/add")
 				.send(product)
 				.end((err, res) => {
-					res.body.message.should.equal("Product added");
 					res.status.should.equal(200);
 					res.body.data.product.should.not.equal(null);
 					done();
@@ -218,10 +236,8 @@ describe("Kreative Kart", () => {
 				.send(product)
 				.end((err, res) => {
 					res.status.should.equal(200);
-					// res.body.message.should.equal("Product added");
-					// res.status.should.equal(200);
-					// res.body.data.product.should.not.equal(null);
-					// res.body.data.product.variations.should.not.equal(null);
+					res.body.data.product.should.not.equal(null);
+					res.body.data.product.variations.should.not.equal(null);
 					done();
 				})
 		})
@@ -259,7 +275,6 @@ describe("Kreative Kart", () => {
 				.post(api + "/products/add")
 				.send(product)
 				.end((err, res) => {
-					res.body.message.should.equal("Product added");
 					res.status.should.equal(200);
 					res.body.data.product.should.not.equal(null);
 					res.body.data.product.variations.length.should.equal(3);
@@ -291,7 +306,6 @@ describe("Kreative Kart", () => {
 				.get("/products")
 				.end((err, res) => {
 					res.status.should.equal(200);
-					res.body.message.should.equal("All Products");
 					res.body.data.products.should.not.equal(null);
 					done();
 				})
@@ -302,8 +316,8 @@ describe("Kreative Kart", () => {
 				.get("/products/testsku")
 				.end((err, res) => {
 					res.status.should.equal(200);
-					res.body.message.should.equal("Product found");
 					res.body.data.product.should.not.equal(null);
+					res.body.data.product.sku.should.equal("testsku");
 					done();
 				})
 		})
@@ -313,7 +327,6 @@ describe("Kreative Kart", () => {
 				.get("/products/testskuhi")
 				.end((err, res) => {
 					res.status.should.equal(404);
-					res.body.message.should.equal("Product Not Found");
 					done();
 				})
 		})
@@ -332,7 +345,6 @@ describe("Kreative Kart", () => {
 				.send(product)
 				.end((err, res) => {
 					res.status.should.equal(200);
-					res.body.message.should.equal("Product Updated");
 					res.body.data.product.name.should.equal("test product Name has changed");
 					res.body.data.product.quantity.should.equal(20);
 					done();
@@ -344,15 +356,110 @@ describe("Kreative Kart", () => {
 				.delete(api + "/products/testsku")
 				.end((err, res) => {
 					res.status.should.equal(200);
-					res.body.message.should.equal("Product Deleted");
 
 					request(api)
 						.get("/products/testsku")
 						.end((err, res) => {
 							res.status.should.equal(404);
-							res.body.message.should.equal("Product Not Found");
 							done();
 						})
+				})
+		})
+	})
+	
+	describe("Cart", () => {
+		before((done) => {
+			let product1 = {
+				sku: "vodka",
+				name: "Vodka",
+				price: 300,
+				quantity: 30,
+				description: "test description"
+			}
+
+			let product2 = {
+				sku: "martini",
+				name: "Martini",
+				price: 10,
+				quantity: 30,
+				description: "test description again",
+				variations: [
+					{
+						"name": "Apple",
+						"price": 6,
+						"quantity": 10,
+						"description": "Apple Version"
+					}
+				]
+			}
+
+			let product3 = {
+				sku: "henny",
+				name: "Hennessy",
+				price: 100,
+				quantity: 30,
+				description: "test description again",
+				variations: [
+					{
+						"name": "White",
+						"price": 100,
+						"quantity": 10,
+						"description": "White Version"
+					}
+				]
+			}
+
+			let product4 = {
+				sku: "gin",
+				name: "Gin",
+				price: 100,
+				quantity: 30,
+				description: "test description with variation",
+				variations: [
+					{
+						name: "Juice",
+						price: 100,
+						quantity: 10,
+						description: "Gin and Juice Version"
+					},
+					{
+						name: "Tonic",
+						price: 100,
+						quantity: 10,
+						description: "Gin and Tonic Version"
+					},
+					{
+						name: "Red Bull",
+						price: 100,
+						quantity: 10,
+						description: "Red Bull Version"
+					}
+				]
+			}
+
+			db.collection("products").insertMany([product1, product2, product3, product4])
+				.then((response) => {
+					console.log("Added Test Products");
+					done();
+				})
+		})
+
+		after((done) => {
+			db.collection("products").drop()
+				.then((respone) => {
+					console.log("Cleared Products Collection");
+					done();
+				})
+		})
+
+		it("should add item to cart", (done) => {
+			shoppingUser
+				.put(api + "/cart/addItem/vodka/2/")
+				.end((err, res) => {
+					console.log(res.body);
+					res.status.should.equal(200);
+					res.body.message.data.quantityAdded.should.equal(2);
+					done();
 				})
 		})
 	})

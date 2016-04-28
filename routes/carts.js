@@ -40,9 +40,12 @@ class CartAPI{
 			}
 		})
 
-		_router.post("/addItem/:sku/:amount/:variation?", (req, res) => {
+		_router.put("/addItem/:sku/:amount/:variation?", (req, res) => {
 			let cart = req.session().cart || new Cart();
 			let item;
+
+			console.log("We are in the Cart");
+			console.log(cart);
 
 			if(item = cart.contains(req.sku, (req.variation || "none"))){
 				cart.addToCart(item, req.amount);
@@ -51,7 +54,8 @@ class CartAPI{
 					message: "Item Added",
 					data: {
 						item: item,
-						quantityAdded: req.amount
+						quantityAdded: req.amount,
+						cart: cart
 					}
 				})
 			}
@@ -66,7 +70,8 @@ class CartAPI{
 								message: "Item Added",
 								data: {
 									item: item,
-									quantityAdded: req.amount
+									quantityAdded: req.amount,
+									cart: cart
 								}
 							})
 						}
@@ -74,7 +79,7 @@ class CartAPI{
 			}
 		})
 
-		_router.post("/removeItem/:sku/:amount/:variation?", (req, res) => {
+		_router.put("/removeItem/:sku/:amount/:variation?", (req, res) => {
 			let cart = req.session().cart || new Cart();
 			let item;
 
@@ -85,7 +90,8 @@ class CartAPI{
 					message: "Item Removed",
 					data: {
 						item: item,
-						quantityRemoved: req.amount
+						quantityRemoved: req.amount,
+						cart: cart
 					}
 				})
 			}
@@ -100,7 +106,8 @@ class CartAPI{
 								message: "Item Removed",
 								data: {
 									item: item,
-									quantityRemoved: req.amount
+									quantityRemoved: req.amount,
+									cart: cart
 								}
 							})
 						}

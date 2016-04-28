@@ -81,6 +81,7 @@ MongoClient.connect(config.mongo.test)
 		app.use("/products", require("./routes/products")(express.Router(), db).router);
 		app.use("/orders", require("./routes/orders")(express.Router()).router);
 		app.use("/customers", require("./routes/customers")(express.Router()).router);
+		app.use("/cart", require("./routes/carts")(express.Router(), db).router);
 
 	}, (error)=>{
 		console.error(error);
