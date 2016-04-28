@@ -19,45 +19,17 @@ class ProductsAPI{
 			}
 		})
 
-		_router.delete("/delete/:sku", middleware.isLoggedIn, (req, res) => {
-			console.log("Delete a Product");
-
-			_db.collection("products").findOneAndDelete({sku: req.sku})
-				.then((doc) => {
-					res.json({
-						message: "Product Deleted",
-						data: {
-							product: doc
-						}
-					})
-				}, (err) => { middleware.defaultError(err, res); })
-		})
-
-		_router.put("/edit/:sku", middleware.isLoggedIn, (req, res) => {
-			console.log("Edit a Product");
-
-			_db.collection("products").findOneAndUpdate({sku: req.sku}, {$set: req.body}, {returnOriginal: false})
-				.then((doc) => {
-					res.json({
-						message: "Product Updated",
-						data: {
-							product: doc.value
-						}
-					})
-				}, (err) => { middleware.defaultError(err, res); })
-		})
-
-		_router.post("/add", middleware.isLoggedIn, (req, res) => {
+		_router.post("/add", middleware.isAdmin, (req, res) => {
 
 			console.log("Add a product");
-
+			console.log(req.body);
 			let product = new Product();
 			product.sku = req.body.sku;
 			product.name = req.body.name;
 			product.price = req.body.price;
 			product.quantity = req.body.quantity;
 			product.description = req.body.description || "";
-			product.variations = req.body.variations ? JSON.parse(req.body.variations) : [];
+			product.variations = req.body.variations ? req.body.variations : [];
 
 			_db.collection("products").find({sku: product.sku}).limit(1).next()
 				.then((doc) => {
@@ -76,6 +48,34 @@ class ProductsAPI{
 								});
 							}, (err) => { middleware.defaultError(err, res); })
 					}
+				}, (err) => { middleware.defaultError(err, res); })
+		})
+
+		_router.delete("/:sku", middleware.isAdmin, (req, res) => {
+			console.log("Delete a Product");
+
+			_db.collection("products").findOneAndDelete({sku: req.sku})
+				.then((doc) => {
+					res.json({
+						message: "Product Deleted",
+						data: {
+							product: doc
+						}
+					})
+				}, (err) => { middleware.defaultError(err, res); })
+		})
+
+		_router.put("/:sku", middleware.isAdmin, (req, res) => {
+			console.log("Edit a Product");
+
+			_db.collection("products").findOneAndUpdate({sku: req.sku}, {$set: req.body}, {returnOriginal: false})
+				.then((doc) => {
+					res.json({
+						message: "Product Updated",
+						data: {
+							product: doc.value
+						}
+					})
 				}, (err) => { middleware.defaultError(err, res); })
 		})
 

@@ -86,7 +86,7 @@ class AdminAPI{
 			}
 			else{
 				console.log("Permission Needed");
-				res.status(401).json({message: "Not an Admin"});
+				res.status(401).json({message: "Not an Admin or Invalid User"});
 			}
 		})
 
