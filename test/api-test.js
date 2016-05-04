@@ -454,11 +454,23 @@ describe("Kreative Kart", () => {
 
 		it("should add item to cart", (done) => {
 			shoppingUser
-				.put(api + "/cart/addItem/vodka/2/")
+				.put(api + "/cart/addItem/vodka/2")
 				.end((err, res) => {
-					console.log(res.body);
 					res.status.should.equal(200);
-					res.body.message.data.quantityAdded.should.equal(2);
+					res.body.data.quantityAdded.should.equal(2);
+					shoppingUser.saveCookies(res);
+					done();
+				})
+		})
+
+		it("should check items in cart", (done) => {
+			shoppingUser
+				.get(api + "/cart")
+				.end((err, res) => {
+					res.status.should.equal(200);
+
+					console.log(res.body);
+					console.log("ho");
 					done();
 				})
 		})

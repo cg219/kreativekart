@@ -7,10 +7,16 @@ const middleware	= require("./../middleware");
 
 class CartAPI{
 	constructor(router, db){
-		let _router = this.router = router;
-		let _db = db;
+		router.param("sku", skuParamHandler);
+		router.param("amount", amountParamHandler);
+		router.param("variation", variationParamHandler);
+		router.put("/addItem/:sku/:amount/:variation?", addItemHandler);
+		router.put("/removeItem/:sku/:amount/:variation?", removeItemHandler);
+		router.get("/", defaultHandler);
 
-		_router.param("sku", function(req, res, next, id){
+		return router;
+
+		function skuParamHandler(req, res, next, id){
 			if(id){
 				req.sku = id;
 				next();
@@ -18,19 +24,19 @@ class CartAPI{
 			else{
 				next();
 			}
-		})
+		}
 
-		_router.param("amount", function(req, res, next, id){
+		function amountParamHandler(req, res, next, id){
 			if(id){
-				req.amount = id;
+				req.amount = Number(id);
 				next();
 			}
 			else{
 				next();
 			}
-		})
+		}
 
-		_router.param("variation", function(req, res, next, id){
+		function variationParamHandler(req, res, next, id){
 			if(id){
 				req.variation = id;
 				next();
@@ -38,18 +44,15 @@ class CartAPI{
 			else{
 				next();
 			}
-		})
+		}
 
-		_router.put("/addItem/:sku/:amount/:variation?", (req, res) => {
-			let cart = req.session().cart || new Cart();
+		function addItemHandler(req, res){
+			let cart = req.session.cart || new Cart();
 			let item;
-
-			console.log("We are in the Cart");
-			console.log(cart);
 
 			if(item = cart.contains(req.sku, (req.variation || "none"))){
 				cart.addToCart(item, req.amount);
-				req.session().cart = cart;
+				req.session.cart = cart;
 				res.status(200).json({
 					message: "Item Added",
 					data: {
@@ -60,12 +63,13 @@ class CartAPI{
 				})
 			}
 			else{
-				_db.collection("products").find({sku: req.sku}).limit(1).next()
+				db.collection("products").find({sku: req.sku}).limit(1).next()
 					.then((doc) => {
 						if(doc){
-							item = new CartItem(new Product(doc) req.variation);
+							item = new CartItem(new Product(doc), req.variation);
 							cart.addToCart(item, req.amount);
-							req.session().cart = cart;
+							req.session.cart = cart;
+							console.log(req.session);
 							res.status(200).json({
 								message: "Item Added",
 								data: {
@@ -75,17 +79,17 @@ class CartAPI{
 								}
 							})
 						}
-					}, (err) = >{ middleware.defaultError(err, res) })
+					}, (err) => { middleware.defaultError(err, res) })
 			}
-		})
+		}
 
-		_router.put("/removeItem/:sku/:amount/:variation?", (req, res) => {
-			let cart = req.session().cart || new Cart();
+		function removeItemHandler(req, res){
+			let cart = req.session.cart || new Cart();
 			let item;
 
 			if(item = cart.contains(req.sku, (req.variation || "none"))){
 				cart.removeFromCart(item, req.amount);
-				req.session().cart = cart;
+				req.session.cart = cart;
 				res.status(200).json({
 					message: "Item Removed",
 					data: {
@@ -96,12 +100,12 @@ class CartAPI{
 				})
 			}
 			else{
-				_db.collection("products").find({sku: req.sku}).limit(1).next()
+				db.collection("products").find({sku: req.sku}).limit(1).next()
 					.then((doc) => {
 						if(doc){
-							item = new CartItem(new Product(doc) req.variation);
+							item = new CartItem(new Product(doc), req.variation);
 							cart.removeFromCart(item, req.amount);
-							req.session().cart = cart;
+							req.session.cart = cart;
 							res.status(200).json({
 								message: "Item Removed",
 								data: {
@@ -111,11 +115,22 @@ class CartAPI{
 								}
 							})
 						}
-					}, (err) = >{ middleware.defaultError(err, res) })
+					}, (err) => { middleware.defaultError(err, res) })
 			}
-		})
-	}
+		}
 
+		function defaultHandler(req, res){
+			console.log(req.session);
+			let cart = req.session.cart;
+
+			res.status(200).json({
+				message: "Items in Cart",
+				data: {
+					items: cart.items
+				}
+			})
+		}
+	}
 }
 
 module.exports = (router, db) => {

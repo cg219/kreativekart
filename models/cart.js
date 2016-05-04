@@ -1,7 +1,6 @@
 'use strict';
 
 const Product = require("./product");
-
 class Cart{
 	constructor(){
 		this.bag = new Map();
@@ -39,7 +38,7 @@ class Cart{
 	contains(sku, variation){
 		let items = this.items;
 
-		for(var [item] of items){
+		for(var item of items){
 			if(item.sku == sku && item.variation == variation){
 				return item;
 			}
@@ -53,9 +52,9 @@ class CartItem{
 	constructor(product, variation){
 		this.sku = product.sku;
 		this.variation = variation || "none";
-		this.price = variation ? product.variations[variation].price || product.price;
+		this.price = variation ? product.variations[variation].price : product.price;
 	}
 }
 
-module.exports.Cart = Cart;
-module.exports.CartItem = CartItem;
+exports.Cart = Cart;
+exports.CartItem = CartItem;
