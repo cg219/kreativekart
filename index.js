@@ -77,10 +77,10 @@ MongoClient.connect(config.mongo.test)
 		app.use(passport.initialize());
 		app.use(passport.session());
 
-		app.use("/admin", require("./routes/admin")(express.Router(), db, passport).router);
-		app.use("/products", require("./routes/products")(express.Router(), db).router);
-		// app.use("/orders", require("./routes/orders")(express.Router()).router);
-		// app.use("/customers", require("./routes/customers")(express.Router()).router);
+		app.use("/admin", require("./routes/admin")(express.Router(), db, passport));
+		app.use("/products", require("./routes/products")(express.Router(), db));
+		// app.use("/orders", require("./routes/orders")(express.Router()));
+		// app.use("/customers", require("./routes/customers")(express.Router()));
 		app.use("/cart", require("./routes/carts")(express.Router(), db));
 
 		console.log("Here")

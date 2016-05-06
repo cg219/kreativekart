@@ -1,10 +1,18 @@
 'use strict';
 
+module.exports = function(router){
+	return new CustomersAPI(router);
+}
+
 class CustomersAPI{
 	constructor(router){
-		let _router = this.router = router;
+		router.param("customerID", getCustomerID);
+		router.get("/:customerID", getCustomer);
+		router.get("/", getAllCustomers);
 
-		_router.param("customerID", function(req, res, next, id){
+		return router;
+
+		function getCustomerID(req, res, next, id){
 			if(id){
 				req.customerID = id;
 				next();
@@ -12,22 +20,16 @@ class CustomersAPI{
 			else{
 				next();
 			}
-		})
+		}
 
-		_router.get("/:customerID", (req, res) => {
+		function getCustomer(req, res){
 			console.log(`Getting customer with id ${req.customerID}`);
-
 			res.json({ message: `Getting customer with id ${req.customerID}`, customerID: req.customerID });
-		})
+		}
 
-		_router.get("/", (req, res) => {
+		function getAllCustomers(req, res){
 			console.log("Getting All Customers");
-
 			res.json({ message: "Getting All Customers" });
-		})
+		}
 	}
-}
-
-module.exports = function(router){
-	return new CustomersAPI(router);
 }

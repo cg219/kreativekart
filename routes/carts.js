@@ -5,18 +5,22 @@ const CartItem 		= require("./../models/cart").CartItem;
 const Product 		= require("./../models/product");
 const middleware	= require("./../middleware");
 
+module.exports = (router, db) => {
+	return new CartAPI(router, db);
+}
+
 class CartAPI{
 	constructor(router, db){
-		router.param("sku", skuParamHandler);
-		router.param("amount", amountParamHandler);
-		router.param("variation", variationParamHandler);
-		router.put("/addItem/:sku/:amount/:variation?", addItemHandler);
-		router.put("/removeItem/:sku/:amount/:variation?", removeItemHandler);
-		router.get("/", defaultHandler);
+		router.param("sku", getSKU);
+		router.param("amount", getAmount);
+		router.param("variation", getVariation);
+		router.put("/addItem/:sku/:amount/:variation?", addItem);
+		router.put("/removeItem/:sku/:amount/:variation?", removeItem);
+		router.get("/", getCart);
 
 		return router;
 
-		function skuParamHandler(req, res, next, id){
+		function getSKU(req, res, next, id){
 			if(id){
 				req.sku = id;
 				next();
@@ -26,7 +30,7 @@ class CartAPI{
 			}
 		}
 
-		function amountParamHandler(req, res, next, id){
+		function getAmount(req, res, next, id){
 			if(id){
 				req.amount = Number(id);
 				next();
@@ -36,7 +40,7 @@ class CartAPI{
 			}
 		}
 
-		function variationParamHandler(req, res, next, id){
+		function getVariation(req, res, next, id){
 			if(id){
 				req.variation = id;
 				next();
@@ -46,7 +50,7 @@ class CartAPI{
 			}
 		}
 
-		function addItemHandler(req, res){
+		function addItem(req, res){
 			let cart = req.session.cart || new Cart();
 			let item;
 
@@ -83,7 +87,7 @@ class CartAPI{
 			}
 		}
 
-		function removeItemHandler(req, res){
+		function removeItem(req, res){
 			let cart = req.session.cart || new Cart();
 			let item;
 
@@ -119,7 +123,7 @@ class CartAPI{
 			}
 		}
 
-		function defaultHandler(req, res){
+		function getCart(req, res){
 			console.log(req.session);
 			let cart = req.session.cart;
 
@@ -131,8 +135,4 @@ class CartAPI{
 			})
 		}
 	}
-}
-
-module.exports = (router, db) => {
-	return new CartAPI(router, db);
 }

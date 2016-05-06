@@ -4,12 +4,22 @@ const Product 		= require("./../models/product");
 const Variation 	= require("./../models/variation");
 const middleware	= require("./../middleware");
 
+module.exports = function(router, db){
+	return new ProductsAPI(router, db);
+}
+
 class ProductsAPI{
 	constructor(router, db){
-		let _router = this.router = router;
-		let _db = db;
+		router.param("sku", getSKU);
+		router.post("/add", middleware.isAdmin, addProduct);
+		router.delete("/:sku", middleware.isAdmin, deleteProduct);
+		router.put("/:sku", middleware.isAdmin, editProduct);
+		router.get("/:sku", getProduct):
+		router.get("/", getAllProducts);
 
-		_router.param("sku", function(req, res, next, id){
+		return router;
+
+		function getSKU(req, res, next, id){
 			if(id){
 				req.sku = id;
 				next();
@@ -17,9 +27,9 @@ class ProductsAPI{
 			else{
 				next();
 			}
-		})
+		}
 
-		_router.post("/add", middleware.isAdmin, (req, res) => {
+		function addProduct(req, res){
 			console.log("Add a product");
 
 			let product = new Product();
@@ -30,13 +40,13 @@ class ProductsAPI{
 			product.description = req.body.description || "";
 			product.variations = req.body.variations ? req.body.variations : [];
 
-			_db.collection("products").find({sku: product.sku}).limit(1).next()
+			db.collection("products").find({sku: product.sku}).limit(1).next()
 				.then((doc) => {
 					if(doc){
 						res.status(500).json({message: "Product with this SKU already exists."});
 					}
 					else{
-						_db.collection("products").insertOne(product)
+						db.collection("products").insertOne(product)
 							.then( (doc) => {
 								res.json({
 									message: "Product added",
@@ -47,12 +57,12 @@ class ProductsAPI{
 							}, (err) => { middleware.defaultError(err, res); })
 					}
 				}, (err) => { middleware.defaultError(err, res); })
-		})
+		}
 
-		_router.delete("/:sku", middleware.isAdmin, (req, res) => {
+		function deleteProduct(req, res){
 			console.log("Delete a Product");
 
-			_db.collection("products").findOneAndDelete({sku: req.sku})
+			db.collection("products").findOneAndDelete({sku: req.sku})
 				.then((doc) => {
 					res.json({
 						message: "Product Deleted",
@@ -61,12 +71,12 @@ class ProductsAPI{
 						}
 					})
 				}, (err) => { middleware.defaultError(err, res); })
-		})
+		}
 
-		_router.put("/:sku", middleware.isAdmin, (req, res) => {
+		function editProduct(req, res){
 			console.log("Edit a Product");
 
-			_db.collection("products").findOneAndUpdate({sku: req.sku}, {$set: req.body}, {returnOriginal: false})
+			db.collection("products").findOneAndUpdate({sku: req.sku}, {$set: req.body}, {returnOriginal: false})
 				.then((doc) => {
 					res.json({
 						message: "Product Updated",
@@ -75,12 +85,12 @@ class ProductsAPI{
 						}
 					})
 				}, (err) => { middleware.defaultError(err, res); })
-		})
+		}
 
-		_router.get("/:sku", (req, res) => {
+		function getProduct(req, res){
 			console.log(`Getting product with id ${req.sku}`);
 
-			_db.collection("products").find({sku: req.sku}).limit(1).next()
+			db.collection("products").find({sku: req.sku}).limit(1).next()
 				.then( (doc)=> {
 					if(doc){
 						res.status(200).json({
@@ -94,12 +104,12 @@ class ProductsAPI{
 						res.status(404).json({ message: "Product Not Found"});
 					}
 				}, (err) =>{ middleware.defaultError(err, res); })
-		})
+		}
 
-		_router.get("/", (req, res) => {
+		function getAllProducts(req, res){
 			console.log("Getting All Products");
 
-			_db.collection("products").find({}).toArray()
+			db.collection("products").find({}).toArray()
 				.then( (docs) => {
 					res.json({
 						message: "All Products",
@@ -108,10 +118,6 @@ class ProductsAPI{
 						}
 					});
 				}, (err) => { middleware.defaultError(err, res); })
-		})
+		}
 	}
-}
-
-module.exports = function(router, db){
-	return new ProductsAPI(router, db);
 }

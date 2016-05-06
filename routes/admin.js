@@ -3,13 +3,23 @@
 const User 			= require("./../models/user");
 const middleware	= require("./../middleware");
 
+module.exports = (router, db, passport) => {
+	return new AdminAPI(router, db, passport);
+}
+
 class AdminAPI{
 	constructor(router, db, passport){
-		let _router = this.router = router;
-		let _db = db;
-		let _passport = passport;
+		router.param("username", getUsername);
+		router.post("/login", passport.authenticate("local"), login);
+		router.get("/logout", logout);
+		router.post("/register", register);
+		router.put("/users/:username/edit", middleware.isLoggedIn, editUser);
+		router.get("/users/:username", middleware.isLoggedIn, findUser);
+		router.get("/users", middleware.isLoggedIn, getAllUsers);
 
-		_router.param("username", function(req, res, next, id){
+		return router;
+
+		function getUsername(req, res, next, id){
 			console.log("Edit")
 			if(id){
 				req.username = id;
@@ -18,23 +28,22 @@ class AdminAPI{
 			else{
 				next();
 			}
-		})
+		}
 
-		_router.post("/login", _passport.authenticate("local"), (req, res) => {
+		function login(req, res){
 			console.log("Logging In");
 			res.json({message: "Logged In"});
-		})
+		}
 
-		_router.get("/logout", (req, res) => {
+		function logout(req, res){
 			console.log("Logging Out");
 			req.logout();
 			res.json({message: "Logged Out"});
-		})
+		}
 
-		_router.post("/register", (req, res) => {
+		function register(req, res){
 			console.log("Registering User:", req.body);
-
-			_db.collection("users").find({username: req.body.username}).limit(1).next()
+			db.collection("users").find({username: req.body.username}).limit(1).next()
 				.then((doc) => {
 					if(doc){
 						console.log("Found User");
@@ -48,7 +57,7 @@ class AdminAPI{
 						user.password = req.body.password;
 						user.role = req.body.role;
 
-						_db.collection("users").insertOne(user)
+						db.collection("users").insertOne(user)
 							.then((doc) => {
 								console.log("User Created");
 								res.json({
@@ -60,9 +69,9 @@ class AdminAPI{
 							}, (err) => { middleware.defaultError(err, res); })
 					}
 				}, (err) => { middleware.defaultEffor(err, res); })
-		})
+		}
 
-		_router.put("/users/:username/edit", middleware.isLoggedIn, (req, res) => {
+		function editUser(req, res){
 			console.log("Editing User:", req.username);
 
 			if((req.user.username == req.username) || (req.user.isAdmin())){
@@ -74,7 +83,7 @@ class AdminAPI{
 					delete updatedUser.role;
 				}
 
-				_db.collection("users").findOneAndUpdate({username: req.username}, {$set: updatedUser}, {returnOriginal: false})
+				db.collection("users").findOneAndUpdate({username: req.username}, {$set: updatedUser}, {returnOriginal: false})
 					.then((doc) => {
 						res.json({
 							message: "User Updated",
@@ -88,12 +97,12 @@ class AdminAPI{
 				console.log("Permission Needed");
 				res.status(401).json({message: "Not an Admin or Invalid User"});
 			}
-		})
+		}
 
-		_router.get("/users/:username", middleware.isLoggedIn, (req, res) => {
+		function findUser(req, res){
 			console.log("Getting User:", req.username);
 
-			_db.collection("users").find({username: req.username}).limit(1).next()
+			db.collection("users").find({username: req.username}).limit(1).next()
 				.then((doc) => {
 					if(doc){
 						res.status(200).json({
@@ -107,12 +116,12 @@ class AdminAPI{
 						res.status(404).json({ message: "User Not Found"});
 					}
 				}, (err) => { middleware.defaultError(err, res); })
-		})
+		}
 
-		_router.get("/users", middleware.isLoggedIn, (req, res) => {
+		function getAllUsers(req, res){
 			console.log("Getting Users");
 
-			_db.collection("users").find({}).toArray()
+			db.collection("users").find({}).toArray()
 				.then((docs) => {
 					res.json({
 						message: "All Users",
@@ -121,10 +130,6 @@ class AdminAPI{
 						}
 					})
 				}, (err) => { middleware.defaultError(err, res); })
-		})
+		}
 	}
-}
-
-module.exports = (router, db, passport) => {
-	return new AdminAPI(router, db, passport);
 }
