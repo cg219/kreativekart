@@ -1,34 +1,28 @@
 'use strict';
 
-class Middleware{
-	constructor(){
-
-	}
+class Middleware {
+	constructor() {}
 
 	isLoggedIn(req, res, next) {
-		if(req.user){
+		if (req.user) {
 			next();
-		}
-		else{
+		} else {
 			res.status(401).json({message: "Unauthorized User"});
 		}
 	}
 
-	isAdmin(req, res, next){
-		if(req.user && req.user.isAdmin()){
+	isAdmin(req, res, next) {
+		if (req.user && req.user.isAdmin()) {
 			next();
-		}
-		else{
+		} else {
 			res.status(401).json({message: "Not an Admin"});
 		}
 	}
 
-	defaultError(err, res, req){
+	defaultError(err, res, req) {
 		console.error(err);
 		res.status(500).json({ message: "Internal Error" });
 	}
 }
 
-let middleware = new Middleware();
-
-module.exports = middleware;
+module.exports = new Middleware();

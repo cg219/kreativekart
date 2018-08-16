@@ -13,22 +13,30 @@
   "author": "Clemente Gomez",
   "license": "ISC",
   "dependencies": {
-    "body-parser": "^1.15.0",
-    "connect-mongo": "^1.1.0",
+    "body-parser": "^1.18.3",
+    "connect-mongo": "^1.2.0",
     "cookie-parser": "^1.4.1",
-    "express": "^4.13.4",
-    "express-session": "^1.13.0",
+    "express": "^4.16.3",
+    "express-session": "^1.15.6",
     "method-override": "^2.3.5",
-    "mongodb": "^2.1.16",
+    "mongodb": "^2.1.18",
     "passport": "^0.3.2",
     "passport-local": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=8.9.1"
   },
   "bugs": {
     "url": "https://github.com/cg219/kreativekart/issues"
   },
   "homepage": "https://github.com/cg219/kreativekart",
   "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-jshint": "^2.1.0",
+    "jshint": "^2.9.6",
+    "jshint-stylish": "^2.2.0",
     "mocha": "^2.4.5",
+    "request": "^2.88.0",
     "should": "^8.3.1",
     "superagent": "^1.8.3",
     "supertest": "^1.2.0"

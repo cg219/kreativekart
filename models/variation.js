@@ -1,27 +1,27 @@
 'use strict';
 
-class Variation{
-	constructor(){
+class Variation {
+	constructor() {
 		this.name = "";
-		this._price = "";
+		this.variationPrice = "";
 		this.description = "";
-		this._quantity = 0;
+		this.variationQt = 0;
 	}
 
 	set price(val){
-		this._price = Number(val);
+		this.variationPrice = Number(val);
 	}
 
 	get price(){
-		return this._price;
+		return this.variationPrice;
 	}
 
 	set quantity(val){
-		this._quantity = Number(val);
+		this.variationQt = Number(val);
 	}
 
 	get quantity(){
-		return this._quantity;
+		return this.variationQt;
 	}
 }
 

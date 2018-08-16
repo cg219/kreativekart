@@ -3,10 +3,11 @@
 const express 			= require("express");
 const bodyParser 		= require("body-parser");
 const cookieParser 		= require("cookie-parser");
+const methodOverride	= require("method-override");
 const config 			= require("./config");
 const MongoClient 		= require("mongodb").MongoClient;
 const app 				= express();
-const port 				= process.env.PORT;
+const port 				= process.env.PORT || 5000;
 const session 			= require("express-session");
 const MongoStore 		= require("connect-mongo")(session);
 const passport 			= require("passport");
@@ -19,15 +20,20 @@ let db;
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 app.use(cookieParser());
+app.use(methodOverride());
 
 MongoClient.connect(config.mongo.test)
-	.then((response)=>{
+	.then(response => {
 		db = response;
 
 		app.use(session({
 			secret: "kart",
-			resave: true,
-			saveUninitialized: true,
+			resave: false,
+			saveUninitialized: false,
+			cookie: {
+				maxAge: 5 * 60, // 5 Mins
+				httpOnly: false
+			},
 			store: new MongoStore({
 				db: db
 			})
@@ -37,23 +43,23 @@ MongoClient.connect(config.mongo.test)
 			usernameField: "username",
 			passwordField: "password"
 		}, (username, password, done) => {
-			
+
 			db.collection("users").find({username: username}).limit(1).next()
-				.then((doc) => {
+				.then(doc => {
 
 					if(doc){
 						let user = new User(doc);
 
-						if(user.isPasswordValid(password)){
+						if (user.isPasswordValid(password)) {
 							done(null, user);
 						}
 
-						done(null, false, {message: "Incorrect User/Password"});
+						done(null, false, { message: "Incorrect User/Password" });
 					}
 					else{
-						done(null, false, {message: "Incorrect User/Password"});
+						done(null, false, { message: "Incorrect User/Password" });
 					}
-				}, (err) => {
+				}, err => {
 					console.error(err);
 					done(err);
 				});
@@ -65,13 +71,11 @@ MongoClient.connect(config.mongo.test)
 
 		passport.deserializeUser((username, done) => {
 			db.collection("users").find({username: username}).limit(1).next()
-				.then((doc) => {
+				.then(doc => {
 					let user = new User(doc);
 
 					done(null, user);
-				}, (err) => {
-					done(err);
-				})
+				}, err => done(err));
 		})
 
 		app.use(passport.initialize());
@@ -84,9 +88,9 @@ MongoClient.connect(config.mongo.test)
 		app.use("/cart", require("./routes/carts")(express.Router(), db));
 
 		console.log("Here")
-	}, (error)=>{
-		console.error(error);
+
 	})
+	.catch(error => console.error(error));
 
 let server = app.listen(port, () => {
 	let address = server.address().address.startsWith(":") ? "localhost" : server.address().address;

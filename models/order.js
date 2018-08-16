@@ -1,19 +1,19 @@
 'use strict';
 
-class Order{
-	constructor(){
+class Order {
+	constructor = () => {
 		this.orderID = "";
 		this.products = [];
 		this.customer = "";
-		this._amount = "";
+		this.orderAmount = "";
 		this.status = "pending";
 	}
 
 	get amount(){
-		return this._amount;
+		return this.orderAmount;
 	}
 
 	set amount(value){
-		this._amount = Number(value);
+		this.orderAmount = Number(value);
 	}
 }

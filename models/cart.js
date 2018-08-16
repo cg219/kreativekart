@@ -1,45 +1,40 @@
 'use strict';
 
 const Product = require("./product");
-class Cart{
-	constructor(){
+
+class Cart {
+	constructor() {
 		this.bag = new Map();
 	}
 
-	addToCart(item, quantity){
-		let bag = this.bag;
-
-		if(bag.has(item)){
-			bag.set(item, bag.get(item) + quantity);
-			return bag;
+	addToCart(item, quantity) {
+		if (this.bag.has(item)) {
+			this.bag.set(item, this.bag.get(item) + quantity);
+			return this.bag;
 		}
 
-		bag.set(item, quantity);
-		return bag;
+		this.bag.set(item, quantity);
+		return this.bag;
 	}
 
-	removeFromCart(item, quantity){
-		let bag = this.bag;
+	removeFromCart(item, quantity) {
+		if (this.bag.has(item)) {
+			this.bag.set(item, this.bag.get(item) - quantity);
 
-		if(bag.has(item)){
-			bag.set(item, bag.get(item) - quantity);
-
-			if(bag.get(item) <= 0){
-				bag.delete(item);
+			if (this.bag.get(item) <= 0) {
+				this.bag.delete(item);
 			}
-			return bag;
+			return this.bag;
 		}
 	}
 
-	get items(){
+	get items() {
 		return this.bag.entries();
 	}
 
-	contains(sku, variation){
-		let items = this.items;
-
-		for(var item of items){
-			if(item.sku == sku && item.variation == variation){
+	contains(sku, variation) {
+		for (let item of this.items) {
+			if (item.sku == sku && item.variation == variation) {
 				return item;
 			}
 		}
@@ -49,7 +44,7 @@ class Cart{
 }
 
 class CartItem{
-	constructor(product, variation){
+	constructor(product, variation) {
 		this.sku = product.sku;
 		this.variation = variation || "none";
 		this.price = variation ? product.variations[variation].price : product.price;
