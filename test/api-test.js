@@ -21,9 +21,9 @@ describe("Kreative Kart", () => {
 		productAdmin = agent.agent();
 		shoppingUser = agent.agent();
 
-		MongoClient.connect(config.mongo.test)
+		MongoClient.connect(config.mongo.test, { useNewUrlParser: true })
 			.then((response) => {
-				db = response;
+				db = response.db();
 				done();
 			})
 	})
@@ -172,7 +172,7 @@ describe("Kreative Kart", () => {
 	// 		db.collection("users").insertOne(user)
 	// 			.then(() => {
 	// 				delete user.role;
-					
+
 	// 				productAdmin
 	// 					.post(api + "/admin/login")
 	// 					.send(user)
@@ -366,7 +366,7 @@ describe("Kreative Kart", () => {
 	// 			})
 	// 	})
 	// })
-	
+
 	describe("Cart", () => {
 		before((done) => {
 			let product1 = {
@@ -458,7 +458,6 @@ describe("Kreative Kart", () => {
 				.end((err, res) => {
 					res.status.should.equal(200);
 					res.body.data.quantityAdded.should.equal(2);
-					shoppingUser.saveCookies(res);
 					done();
 				})
 		})

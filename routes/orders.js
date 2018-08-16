@@ -5,15 +5,17 @@ const middleware	= require("./../middleware");
 module.exports = (router, db) =>  new OrdersAPI(router, db);
 
 class OrdersAPI {
-	constructor = (router, db) => {
-		router.param("orderID", this.getOrderID);
-		router.get("/:orderID", middleware.isLoggedIn, this.getOrder);
-		router.get("/", middleware.isLoggedIn, this.getAllOrders);
+	constructor(router, db) {
+		this.db = db;
+
+		router.param("orderID", this.getOrderID.bind(this));
+		router.get("/:orderID", middleware.isLoggedIn, this.getOrder.bind(this));
+		router.get("/", middleware.isLoggedIn, this.getAllOrders.bind(this));
 
 		return router;
 	}
 
-	getOrderID = (req, res, next, id) => {
+	getOrderID(req, res, next, id) {
 		if (id) {
 			req.orderID = id;
 			next();
@@ -22,10 +24,10 @@ class OrdersAPI {
 		}
 	}
 
-	getOrder = (req, res) => {
+	getOrder(req, res) {
 		console.log(`Getting order with id ${req.orderID}`);
 
-		db.collection("orders").find({orderID: req.orderID}).limit(1).next()
+		this.db.collection("orders").find({orderID: req.orderID}).limit(1).next()
 			.then(doc => {
 				if (doc) {
 					res.status(200).json({
@@ -35,18 +37,20 @@ class OrdersAPI {
 				} else {
 					res.status(404).json({ message: "Order Not Found"});
 				}
-			}, err => middleware.defaultError(err, res));
+			})
+			.catch(err => middleware.defaultError(err, res));
 	}
 
-	getAllOrders = (req, res) => {
+	getAllOrders(req, res) {
 		console.log("Getting All Orders");
 
-		db.collection("orders").find({}).toArray()
+		this.db.collection("orders").find({}).toArray()
 			.then(docs => {
 				res.json({
 					message: "All Orders",
 					data: { orders: docs }
 				});
-			}, err => middleware.defaultError(err, res));
+			})
+			.catch(err => middleware.defaultError(err, res));
 	}
 }

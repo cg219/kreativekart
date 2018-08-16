@@ -22,9 +22,9 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(methodOverride());
 
-MongoClient.connect(config.mongo.test)
+MongoClient.connect(config.mongo.test, { useNewUrlParser: true })
 	.then(response => {
-		db = response;
+		db = response.db();
 
 		app.use(session({
 			secret: "kart",
@@ -35,7 +35,8 @@ MongoClient.connect(config.mongo.test)
 				httpOnly: false
 			},
 			store: new MongoStore({
-				db: db
+				db: db,
+				url: config.mongo.test
 			})
 		}));
 
@@ -86,8 +87,6 @@ MongoClient.connect(config.mongo.test)
 		// app.use("/orders", require("./routes/orders")(express.Router()));
 		// app.use("/customers", require("./routes/customers")(express.Router()));
 		app.use("/cart", require("./routes/carts")(express.Router(), db));
-
-		console.log("Here")
 
 	})
 	.catch(error => console.error(error));

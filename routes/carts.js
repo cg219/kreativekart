@@ -129,6 +129,7 @@ class CartAPI {
 	}
 
 	getCart(req, res) {
+		console.log("GETTING CART")
 		console.log(req.session);
 
 		res.status(200).json({

@@ -1,7 +1,7 @@
 'use strict';
 
 class Order {
-	constructor = () => {
+	constructor() {
 		this.orderID = "";
 		this.products = [];
 		this.customer = "";
