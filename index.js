@@ -9,7 +9,7 @@ const MongoClient 		= require("mongodb").MongoClient;
 const app 				= express();
 const port 				= process.env.PORT || 5000;
 const session 			= require("express-session");
-const MongoStore 		= require("connect-mongo")(session);
+const RedisStore 		= require("connect-redis")(session);
 const passport 			= require("passport");
 const LocalStrategy 	= require("passport-local").Strategy;
 const User 				= require("./models/user");
@@ -31,12 +31,13 @@ MongoClient.connect(config.mongo.test, { useNewUrlParser: true })
 			resave: false,
 			saveUninitialized: false,
 			cookie: {
-				maxAge: 5 * 60, // 5 Mins
+				maxAge: 300, // 5 Mins
 				httpOnly: false
 			},
-			store: new MongoStore({
-				db: db,
-				url: config.mongo.test
+			store: new RedisStore({
+				host: "127.0.0.1",
+				port: "6379",
+				ttl: 300
 			})
 		}));
 

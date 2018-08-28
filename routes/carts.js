@@ -49,11 +49,12 @@ class CartAPI {
 	}
 
 	addItem(req, res) {
-		req.session.cart = req.session.cart || new Cart();
-		let item = req.session.cart.contains(req.sku, (req.variation || "none"));
+		let cart = req.session.cart || new Cart();
+		let item = cart.contains(req.sku, (req.variation || "none"));
 
 		if (item) {
-			req.session.cart.addToCart(item, req.amount);
+			cart.addToCart(item, req.amount);
+			req.session.cart = cart;
 			req.session.save(() => {
 				res.status(200).json({
 					message: "Item Added",
@@ -66,26 +67,24 @@ class CartAPI {
 			});
 		} else {
 			this.db.collection("products").find({sku: req.sku}).limit(1).next()
-				.then((doc) => {
+				.then(doc => {
 					if (doc) {
 						item = new CartItem(new Product(doc), req.variation);
-						// req.session.cart.addToCart(item, req.amount);
-						req.session.oh = "OH";
+						cart.addToCart(item, req.amount);
+						req.session.cart = cart;
 
 						let response = {
 							message: "Item Added",
 							data: {
 								item: item,
 								quantityAdded: req.amount,
-								// bag: req.session.cart.bag.items
-								bag: req.session.oh
+								bag: cart.bag.items
 							}
 						}
-						req.session.save(function(){
-							console.log(req.session);
-							res.status(200).json(response);
-						})
 
+						req.session.save(() => {
+							res.status(200).json(response);
+						});
 					}
 				})
 				.catch(err => middleware.defaultError(err, res));
@@ -99,14 +98,17 @@ class CartAPI {
 		if (item) {
 			cart.removeFromCart(item, req.amount);
 			req.session.cart = cart;
-			res.status(200).json({
-				message: "Item Removed",
-				data: {
-					item: item,
-					quantityRemoved: req.amount,
-					cart: cart
-				}
-			});
+			req.session.save(() => {
+				res.status(200).json({
+					message: "Item Removed",
+					data: {
+						item: item,
+						quantityRemoved: req.amount,
+						cart: cart
+					}
+				});
+			})
+
 		} else {
 			this.db.collection("products").find({sku: req.sku}).limit(1).next()
 				.then((doc) => {
@@ -114,14 +116,16 @@ class CartAPI {
 						item = new CartItem(new Product(doc), req.variation);
 						cart.removeFromCart(item, req.amount);
 						req.session.cart = cart;
-						res.status(200).json({
-							message: "Item Removed",
-							data: {
-								item: item,
-								quantityRemoved: req.amount,
-								cart: cart
-							}
-						});
+						req.session.save(() => {
+							res.status(200).json({
+								message: "Item Removed",
+								data: {
+									item: item,
+									quantityRemoved: req.amount,
+									cart: cart
+								}
+							});
+						})
 					}
 				})
 				.catch(err => middleware.defaultError(err, res));
@@ -136,7 +140,7 @@ class CartAPI {
 			message: "Items in Cart",
 			data: {
 				// items: req.session.cart.items
-				items: req.session.oh
+				// items: req.session.oh
 			}
 		})
 	}

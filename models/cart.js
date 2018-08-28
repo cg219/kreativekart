@@ -5,6 +5,8 @@ const Product = require("./product");
 class Cart {
 	constructor() {
 		this.bag = new Map();
+
+		return this;
 	}
 
 	addToCart(item, quantity) {

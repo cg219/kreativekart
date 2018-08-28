@@ -17,9 +17,11 @@ describe("Kreative Kart", () => {
 
 	before((done) => {
 		normalUser = agent.agent();
+		// normalUser = request(api);
 		adminUser = agent.agent();
 		productAdmin = agent.agent();
-		shoppingUser = agent.agent();
+		// shoppingUser = agent.agent();
+		shoppingUser = request(api);
 
 		MongoClient.connect(config.mongo.test, { useNewUrlParser: true })
 			.then((response) => {
@@ -454,7 +456,7 @@ describe("Kreative Kart", () => {
 
 		it("should add item to cart", (done) => {
 			shoppingUser
-				.put(api + "/cart/addItem/vodka/2")
+				.put("/cart/addItem/vodka/2")
 				.end((err, res) => {
 					res.status.should.equal(200);
 					res.body.data.quantityAdded.should.equal(2);
@@ -464,7 +466,7 @@ describe("Kreative Kart", () => {
 
 		it("should check items in cart", (done) => {
 			shoppingUser
-				.get(api + "/cart")
+				.get("/cart")
 				.end((err, res) => {
 					res.status.should.equal(200);
 
