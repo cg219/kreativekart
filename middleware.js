@@ -11,6 +11,18 @@ class Middleware {
 		}
 	}
 
+	checkSession(req, res, next) {
+		// console.log(req.sessionID);
+		// if (req.session) {
+		// 	next();
+		// } else {
+		// 	req.session = {session: 'newSession'}
+		// 	next();
+		// }
+
+		next();
+	}
+
 	isAdmin(req, res, next) {
 		if (req.user && req.user.isAdmin()) {
 			next();

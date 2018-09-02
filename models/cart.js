@@ -5,6 +5,7 @@ const Product = require("./product");
 class Cart {
 	constructor() {
 		this.bag = new Map();
+		this.serialBag;
 
 		return this;
 	}
@@ -31,7 +32,7 @@ class Cart {
 	}
 
 	get items() {
-		return this.bag.entries();
+		return Array.from(this.bag.entries());
 	}
 
 	contains(sku, variation) {
@@ -42,6 +43,16 @@ class Cart {
 		}
 
 		return false;
+	}
+
+	serialize() {
+		this.serialBag = Array.from(this.bag.entries());
+		return this;
+	}
+
+	deserialize() {
+		this.bag = new Map(this.serialBag);
+		this.serialBag = null;
 	}
 }
 

@@ -9,6 +9,7 @@ const MongoClient 		= require("mongodb").MongoClient;
 const app 				= express();
 const port 				= process.env.PORT || 5000;
 const session 			= require("express-session");
+const Redis 	 		= require("redis");
 const RedisStore 		= require("connect-redis")(session);
 const passport 			= require("passport");
 const LocalStrategy 	= require("passport-local").Strategy;
@@ -19,7 +20,7 @@ let db;
 
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
-app.use(cookieParser());
+// app.use(cookieParser());
 app.use(methodOverride());
 
 MongoClient.connect(config.mongo.test, { useNewUrlParser: true })
@@ -28,16 +29,14 @@ MongoClient.connect(config.mongo.test, { useNewUrlParser: true })
 
 		app.use(session({
 			secret: "kart",
+			name: 'sessionid',
 			resave: false,
 			saveUninitialized: false,
-			cookie: {
-				maxAge: 300, // 5 Mins
-				httpOnly: false
-			},
 			store: new RedisStore({
 				host: "127.0.0.1",
 				port: "6379",
-				ttl: 300
+				ttl: 300,
+				client: Redis.createClient()
 			})
 		}));
 
@@ -45,10 +44,8 @@ MongoClient.connect(config.mongo.test, { useNewUrlParser: true })
 			usernameField: "username",
 			passwordField: "password"
 		}, (username, password, done) => {
-
 			db.collection("users").find({username: username}).limit(1).next()
 				.then(doc => {
-
 					if(doc){
 						let user = new User(doc);
 
@@ -82,6 +79,7 @@ MongoClient.connect(config.mongo.test, { useNewUrlParser: true })
 
 		app.use(passport.initialize());
 		app.use(passport.session());
+		app.use(middleware.checkSession);
 
 		app.use("/admin", require("./routes/admin")(express.Router(), db, passport));
 		app.use("/products", require("./routes/products")(express.Router(), db));

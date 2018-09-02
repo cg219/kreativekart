@@ -8,10 +8,10 @@ class User {
 	}
 
 	isPasswordValid(pass) {
-		this.password === pass;
+		return this.password === pass;
 	}
 	isAdmin() {
-		this.role === "admin";
+		return this.role === "admin";
 	}
 }
 
