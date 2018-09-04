@@ -86,13 +86,9 @@ describe("Kreative Kart", () => {
 				.send(user)
 				.end((err, res) => {
 					res.body.message.should.not.equal(null);
-
-					normalUser
-						.get(api + "/admin/users/")
-						.end((err, res) => {
-							res.status.should.equal(200);
-							done();
-						})
+					res.body.data.username.should.equal(user.username);
+					res.body.data.role.should.equal('normal');
+					done();
 				})
 		})
 
@@ -446,9 +442,19 @@ describe("Kreative Kart", () => {
 
 		after((done) => {
 			db.collection("products").drop()
-				.then((respone) => {
+				.then(response => {
 					console.log("Cleared Products Collection");
-					done();
+
+					db.collection("customers").drop()
+						.then(response => {
+							console.log("Cleared Customers Collection");
+
+							db.collection("orders").drop()
+								.then(response => {
+									console.log("Cleared Orders Collection");
+									done();
+								})
+						})
 				})
 		})
 
@@ -469,6 +475,60 @@ describe("Kreative Kart", () => {
 					res.status.should.equal(200);
 					res.body.data.cart[0][0].sku.should.equal('vodka');
 					res.body.data.cart[0][1].should.equal(2);
+					done();
+				})
+		})
+
+		it("should change quantity of item in cart", (done) => {
+			shoppingUser
+				.put(`${api}/cart/addItem/vodka/1`)
+				.end((err, res) => {
+					res.status.should.equal(200);
+					res.body.data.quantityAdded.should.equal(1);
+					res.body.data.cart[0][0].sku.should.equal('vodka');
+					res.body.data.cart[0][1].should.equal(3);
+					done();
+				})
+		})
+
+		it("should decrease quantity of item in cart", (done) => {
+			shoppingUser
+				.put(`${api}/cart/removeItem/vodka/1`)
+				.end((err, res) => {
+					res.status.should.equal(200);
+					res.body.data.quantityRemoved.should.equal(1);
+					res.body.data.cart[0][0].sku.should.equal('vodka');
+					res.body.data.cart[0][1].should.equal(2);
+					done();
+				})
+		})
+
+		it("should fail removing an item not in cart", (done) => {
+			shoppingUser
+				.put(`${api}/cart/removeItem/gin/1`)
+				.end((err, res) => {
+					res.status.should.equal(304);
+					done();
+				})
+		})
+
+		it("should create an order", (done) => {
+			let customer = {
+				customer: {
+					streetAddress: '125 Nunya Blvd',
+					city: 'Hollywood',
+					zipcode: '43132',
+					firstName: 'Johnny',
+					lastName: 'Walker'
+				}
+			}
+
+			shoppingUser
+				.post(`${api}/cart/order`)
+				.send(customer)
+				.end((err, res) => {
+					res.status.should.equal(200);
+					res.body.data.orderNumber.should.exist;
 					done();
 				})
 		})

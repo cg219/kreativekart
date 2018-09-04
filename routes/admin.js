@@ -32,9 +32,14 @@ class AdminAPI {
 	}
 
 	login(req, res) {
-		console.log('HO')
 		console.log("Logging In");
-		res.json({ message: "Logged In" });
+		res.json({
+			message: "Logged In",
+			data: {
+				username: req.user.username,
+				role: req.user.role
+			}
+		});
 	}
 
 	logout(req, res) {

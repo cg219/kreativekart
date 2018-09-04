@@ -1,6 +1,7 @@
 'use strict';
 
 const Product = require("./product");
+const Order = require('./order');
 
 class Cart {
 	constructor() {
@@ -31,14 +32,34 @@ class Cart {
 		}
 	}
 
+	makeOrder() {
+		let order = new Order();
+		let bag = this.bag.entries();
+		let item = bag.next();
+
+		while(!item.done) {
+			let product = new Product(item.value[0]);
+
+			product.quantity = item.value[1];
+			order.products.push(product);
+			item = bag.next();
+		}
+
+		return order;
+	}
+
 	get items() {
 		return Array.from(this.bag.entries());
 	}
 
 	contains(sku, variation) {
 		for (let item of this.items) {
-			if (item.sku == sku && item.variation == variation) {
-				return item;
+			let product = item[0];
+			let quantity = item[1];
+
+			if (product.sku == sku && product.variation == variation) {
+				return product;
+				break;
 			}
 		}
 
@@ -51,8 +72,10 @@ class Cart {
 	}
 
 	deserialize() {
-		this.bag = new Map(this.serialBag);
-		this.serialBag = null;
+		if (this.serialBag) {
+			this.bag = new Map(this.serialBag);
+			this.serialBag = null;
+		}
 	}
 }
 
